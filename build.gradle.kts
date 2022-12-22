@@ -66,6 +66,7 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
 
     testImplementation("org.openrewrite:rewrite-test")
+    testImplementation("org.openrewrite:rewrite-properties")
     testImplementation("org.assertj:assertj-core:latest.release")
 }
 
@@ -79,7 +80,7 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
 }
 tasks.named<JavaCompile>("compileJava") {
-    options.release.set(8)
+    options.release.set(17)
 }
 
 configure<ContactsExtension> {

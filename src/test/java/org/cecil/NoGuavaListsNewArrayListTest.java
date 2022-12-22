@@ -1,4 +1,4 @@
-package com.yourorg;
+package org.cecil;
 
 import org.junit.jupiter.api.Test;
 import org.openrewrite.java.JavaParser;
