@@ -52,7 +52,7 @@ class NoExtendsGenericJpaDaoTest implements RewriteTest {
             import contrast.teamserver.dao.TrustedDevice;
 
             public class TrustedDeviceJpaDao implements TrustedDeviceDao {
-
+            
             }
         """));
   }

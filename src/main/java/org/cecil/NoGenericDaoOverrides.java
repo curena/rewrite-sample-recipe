@@ -25,15 +25,18 @@ import lombok.Value;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.RemoveAnnotation;
 import org.openrewrite.java.TypeMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.MethodInvocation;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.SearchResult;
 
 @Value
 @EqualsAndHashCode(callSuper = true)
-public class NoExtendsGenericJpaDao extends Recipe {
+public class NoGenericDaoOverrides extends Recipe {
   private static final String FULLY_QUALIFIED_NAME = "contrast.teamserver.dao.GenericJpaDao";
   private static final TypeMatcher GENERIC_JPA_DAO = new TypeMatcher(FULLY_QUALIFIED_NAME);
 
@@ -44,12 +47,12 @@ public class NoExtendsGenericJpaDao extends Recipe {
 
   @Override
   public String getDisplayName() {
-    return "Do not extend GenericJpaDao";
+    return "Do not override GenericDao methods";
   }
 
   @Override
   public String getDescription() {
-    return "Removes inheritance of deprecated class GenericJpaDao.";
+    return "Removes any method overrides of GenericDao methods";
   }
 
   @Override
@@ -64,8 +67,8 @@ public class NoExtendsGenericJpaDao extends Recipe {
 
   static class GenericJpaDaoApplicableTester extends JavaIsoVisitor<ExecutionContext> {
     @Override
-    public J.ClassDeclaration visitClassDeclaration(
-        J.ClassDeclaration classDeclaration, ExecutionContext ctx) {
+    public ClassDeclaration visitClassDeclaration(
+        ClassDeclaration classDeclaration, ExecutionContext ctx) {
       var visitedDeclaration = super.visitClassDeclaration(classDeclaration, ctx);
       if (!(visitedDeclaration.getType() instanceof JavaType.Class declaredType)
           || visitedDeclaration.getExtends() == null) {
@@ -80,44 +83,38 @@ public class NoExtendsGenericJpaDao extends Recipe {
   }
 
   static class GenericJpaDaoVisitor extends JavaIsoVisitor<ExecutionContext> {
-
     /**
-     * Removes inheritance of GenericJpaDao from declaring class
+     * Removes any overrides of the methods from GenericDao.
      *
-     * @param classDeclaration the declaring class
-     * @param ctx the execution context
-     * @return the updated class declaration
+     * @param methodDeclaration method declaration
+     * @param context execution context
+     * @return the updated method declaration
      */
     @Override
-    public J.ClassDeclaration visitClassDeclaration(
-        J.ClassDeclaration classDeclaration, ExecutionContext ctx) {
-      if (!(classDeclaration.getType() instanceof JavaType.Class declaredType)
-          || classDeclaration.getExtends() == null) {
-        return super.visitClassDeclaration(classDeclaration, ctx);
+    public J.MethodDeclaration visitMethodDeclaration(
+        J.MethodDeclaration methodDeclaration, ExecutionContext context) {
+      final var methodType = methodDeclaration.getMethodType();
+      if (methodType == null) {
+        return super.visitMethodDeclaration(methodDeclaration, context);
       }
-      var result = classDeclaration;
-      if (extendsGenericJpaDao(declaredType)) {
-        result = updateClassDeclaration(classDeclaration, declaredType);
+      var maybeClassType =
+          getCursor().getNearestMessage(methodType.getDeclaringType().getFullyQualifiedName());
+      if (!(maybeClassType instanceof JavaType.Class declaredType)) {
+        return super.visitMethodDeclaration(methodDeclaration, context);
       }
-      return super.visitClassDeclaration(result, ctx);
-    }
-
-    private J.ClassDeclaration updateClassDeclaration(
-        final ClassDeclaration classDeclaration, final JavaType.Class declaredType) {
-      var updatedType = getUpdatedType(declaredType);
-      var result = getUpdatedClassDeclaration(classDeclaration, updatedType);
-      maybeRemoveImport(FULLY_QUALIFIED_NAME);
-      getCursor().putMessage(updatedType.getFullyQualifiedName(), updatedType);
-      return result;
-    }
-
-    private ClassDeclaration getUpdatedClassDeclaration(
-        final ClassDeclaration classDeclaration, final JavaType.Class updatedType) {
-      return classDeclaration.withExtends(null).withType(updatedType);
-    }
-
-    private JavaType.Class getUpdatedType(final JavaType.Class declaredType) {
-      return declaredType.withSupertype(null);
+      methodDeclaration =
+          methodDeclaration.withMethodType(methodType.withDeclaringType(declaredType));
+      if (methodDeclaration.getAllAnnotations().stream()
+              .noneMatch(annotation -> isOfClassType(annotation.getType(), "java.lang.Override"))
+          || TypeUtils.isOverride(methodType)) {
+        return super.visitMethodDeclaration(methodDeclaration, context);
+      }
+      methodDeclaration =
+          (J.MethodDeclaration)
+              new RemoveAnnotation("@java.lang.Override")
+                  .getVisitor()
+                  .visitNonNull(methodDeclaration, context, getCursor().getParentOrThrow());
+      return super.visitMethodDeclaration(methodDeclaration, context);
     }
   }
 }
