@@ -36,24 +36,21 @@ class NoExtendsGenericJpaDaoTest implements RewriteTest {
 
   @Test
   public void shouldRemoveGenericJpaDaoInheritanceAndImport() {
-    rewriteRun(
-        java(
-            """
-            import contrast.teamserver.dao.GenericJpaDao;
-            import contrast.teamserver.dao.TrustedDeviceDao;
-            import contrast.teamserver.dao.TrustedDevice;
+    rewriteRun(java("""
+                            import contrast.teamserver.dao.GenericJpaDao;
+                            import contrast.teamserver.dao.TrustedDeviceDao;
+                            import contrast.teamserver.dao.TrustedDevice;
 
-            public class TrustedDeviceJpaDao extends GenericJpaDao<TrustedDevice, Long> implements TrustedDeviceDao {
+                            public class TrustedDeviceJpaDao extends GenericJpaDao<TrustedDevice, Long> implements TrustedDeviceDao {
 
-            }
-        """,
-            """
-            import contrast.teamserver.dao.TrustedDeviceDao;
-            import contrast.teamserver.dao.TrustedDevice;
+                            }
+                        """, """
+                            import contrast.teamserver.dao.TrustedDeviceDao;
+                            import contrast.teamserver.dao.TrustedDevice;
 
-            public class TrustedDeviceJpaDao implements TrustedDeviceDao {
-            
-            }
-        """));
+                            public class TrustedDeviceJpaDao implements TrustedDeviceDao {
+
+                            }
+                        """));
   }
 }
