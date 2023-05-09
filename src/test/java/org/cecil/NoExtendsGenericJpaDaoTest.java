@@ -31,7 +31,8 @@ class NoExtendsGenericJpaDaoTest implements RewriteTest {
   @Override
   public void defaults(RecipeSpec spec) {
     spec.recipe(new NoExtendsGenericJpaDao())
-        .parser(fromJavaVersion().logCompilationWarningsAndErrors(true).classpath("main"));
+        .parser(fromJavaVersion().logCompilationWarningsAndErrors(true)
+            .classpath("main", "spring-context"));
   }
 
   @Test
@@ -40,16 +41,23 @@ class NoExtendsGenericJpaDaoTest implements RewriteTest {
                             import contrast.teamserver.dao.GenericJpaDao;
                             import contrast.teamserver.dao.TrustedDeviceDao;
                             import contrast.teamserver.dao.TrustedDevice;
+                            import org.springframework.stereotype.Repository;
 
+                            @Repository
                             public class TrustedDeviceJpaDao extends GenericJpaDao<TrustedDevice, Long> implements TrustedDeviceDao {
 
                             }
                         """, """
                             import contrast.teamserver.dao.TrustedDeviceDao;
                             import contrast.teamserver.dao.TrustedDevice;
+                            import org.springframework.stereotype.Repository;
+                            import jakarta.persistence.PersistenceContext;
+                            import jakarta.persistence.EntityManager;
 
+                            @Repository
                             public class TrustedDeviceJpaDao implements TrustedDeviceDao {
-
+                                @PersistenceContext
+                                private EntityManager entityManager;
                             }
                         """));
   }

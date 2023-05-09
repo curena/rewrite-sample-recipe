@@ -42,7 +42,6 @@ public class RemoveGenericJpaDao extends Recipe {
 
   public RemoveGenericJpaDao() {
     doNext(new NoExtendsGenericJpaDao());
-    doNext(new AddEntityManagerToJpaDao());
     doNext(new ReplaceGetPersistentClass());
     doNext(new NoGenericDaoOverrides());
   }

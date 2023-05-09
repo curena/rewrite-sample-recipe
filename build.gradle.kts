@@ -64,7 +64,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-params:latest.release")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:latest.release")
-
+    testImplementation("org.hibernate.orm:hibernate-core:latest.release")
+    testImplementation("org.springframework:spring-context:latest.release")
     testImplementation("org.openrewrite:rewrite-test")
     testImplementation("org.openrewrite:rewrite-properties")
     testImplementation("org.assertj:assertj-core:latest.release")
