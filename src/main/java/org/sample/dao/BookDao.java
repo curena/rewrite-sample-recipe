@@ -1,4 +1,4 @@
-package contrast.teamserver.dao;
+package org.sample.dao;
 /*-
  * #%L
  * Contrast TeamServer
@@ -18,6 +18,6 @@ package contrast.teamserver.dao;
  * #L%
  */
 
-public class TrustedDevice {
+public interface BookDao {
 
 }

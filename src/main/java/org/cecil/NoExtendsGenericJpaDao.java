@@ -181,10 +181,10 @@ public class NoExtendsGenericJpaDao extends Recipe {
     }
 
     private ClassDeclaration copyClassDeclaration(final ClassDeclaration classDeclaration) {
-      var typeParameters = Optional.ofNullable(classDeclaration.getTypeParameters())params ->
-          params.stream()
-              .map(i -> new JRightPadded<>(i, EMPTY, Markers.EMPTY))
-              .toList());
+//      var typeParameters = Optional.ofNullable(classDeclaration.getTypeParameters())params ->
+//          params.stream()
+//              .map(i -> new JRightPadded<>(i, EMPTY, Markers.EMPTY))
+//              .toList());
 
       var primaryConstructor = Optional.ofNullable(classDeclaration.getPrimaryConstructor());
       return new ClassDeclaration(
@@ -200,7 +200,7 @@ public class NoExtendsGenericJpaDao extends Recipe {
               Collections.emptyList(),
               classDeclaration.getKind()),
           classDeclaration.getName(),
-          typeParameters,
+          null,
           JContainer.build(
               Objects.requireNonNull(classDeclaration.getPrimaryConstructor()).stream()
                   .map(i -> new JRightPadded<Statement>(i, EMPTY, Markers.EMPTY))

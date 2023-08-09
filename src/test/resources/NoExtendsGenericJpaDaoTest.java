@@ -38,9 +38,9 @@ class NoExtendsGenericJpaDaoTest implements RewriteTest {
   @Test
   public void shouldRemoveGenericJpaDaoInheritanceAndImport() {
     rewriteRun(java("""
-                            import contrast.teamserver.dao.GenericJpaDao;
-                            import contrast.teamserver.dao.TrustedDeviceDao;
-                            import contrast.teamserver.dao.TrustedDevice;
+                            import org.sample.dao.GenericJpaDao;
+                            import org.sample.dao.TrustedDeviceDao;
+                            import org.sample.dao.TrustedDevice;
                             import org.springframework.stereotype.Repository;
 
                             @Repository
@@ -48,8 +48,8 @@ class NoExtendsGenericJpaDaoTest implements RewriteTest {
 
                             }
                         """, """
-                            import contrast.teamserver.dao.TrustedDeviceDao;
-                            import contrast.teamserver.dao.TrustedDevice;
+                            import org.sample.dao.TrustedDeviceDao;
+                            import org.sample.dao.TrustedDevice;
                             import org.springframework.stereotype.Repository;
                             import jakarta.persistence.PersistenceContext;
                             import jakarta.persistence.EntityManager;
