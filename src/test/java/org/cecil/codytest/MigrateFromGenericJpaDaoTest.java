@@ -9,47 +9,90 @@ import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
 class MigrateFromGenericJpaDaoTest implements RewriteTest {
-  @Override
-  public void defaults(RecipeSpec spec) {
-    spec.recipe(new NoExtendsGenericJpaDao())
-        .parser(
-            JavaParser.fromJavaVersion().logCompilationWarningsAndErrors(true));
-  }
 
-  @Test
-  void migrate() {
-    rewriteRun(
-        java(
+    @Test
+    void addInstanceVariableAndReplaceMethodUsage() {
+        rewriteRun(
+          spec -> spec.recipe(new AddInstanceVariableAndReplaceMethodUsage("org.test.MyInterface")),
+          java(
             """
-          package org.sample.dao;
-
-          public class BookJpaDao implements GenericDao<Book, Long> {
-            private String myString;
-          
-            public void add(Book book) {
-              getEntityManager().persist(book);
-            }
-          }
-
-
-      """,
+              package org.test;
+              
+              public class TestClass implements MyInterface {
+                  public MyVar myIntMethod() {
+                      return new MyVar();
+                  }
+                  
+                  public void doSomething() {
+                      myIntMethod().doSomething();
+                  }
+              }
+              """,
             """
-           package org.sample.dao;
+              package org.test;
+              
+              public class TestClass {
+                  private MyVar myVar;
+                  
+                  public void doSomething() {
+                      myVar.doSomething();
+                  }
+              }
+              """
+          )
+        );
+    }
 
-           import jakarta.persistence.EntityManager;
-           import jakarta.persistence.PersistenceContext;
-           
-           public class BookJpaDao {
-             @PersistenceContext
-             private EntityManager entityManager;
-             private String myString;
-             
-             public void add(Book book) {
-               entityManager.persist(book);
-             }
-           }
-      """));
-  }
+    @Test
+    void doesNotModifyNonImplementingClass() {
+        rewriteRun(
+          spec -> spec.recipe(new AddInstanceVariableAndReplaceMethodUsage("org.test.MyInterface")),
+          java(
+            """
+              package org.test;
+              
+              public class TestClass {
+                  public void doSomething() {
+                      // Some code
+                  }
+              }
+              """
+          )
+        );
+    }
 
-
+    @Test
+    void handlesMultipleMethodUsages() {
+        rewriteRun(
+          spec -> spec.recipe(new AddInstanceVariableAndReplaceMethodUsage("org.test.MyInterface")),
+          java(
+            """
+              package org.test;
+              
+              public class TestClass implements MyInterface {
+                  public MyVar myIntMethod() {
+                      return new MyVar();
+                  }
+                  
+                  public void doSomething() {
+                      myIntMethod().doSomething();
+                      myIntMethod().doSomethingElse();
+                  }
+              }
+              """,
+            """
+              package org.test;
+              
+              public class TestClass {
+                  private MyVar myVar;
+                  
+                  public void doSomething() {
+                      myVar.doSomething();
+                      myVar.doSomethingElse();
+                  }
+              }
+              """
+          )
+        );
+    }
 }
